@@ -15,7 +15,7 @@ public class PersonDataAccessService implements PersonDao{
 
     @Override
     public List<Person> selectAllPeople() {
-        return List.of(new Person(UUID.randomUUID(), "FROM POSTGRES DB"));
+        return List.of(new Person(UUID.randomUUID(), "FROM POSTGRES DB", "DATABASE"));
     }
 
     @Override

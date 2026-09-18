@@ -1,10 +1,14 @@
 package com.example.demo.api;
-import java.util.List;
-import java.util.UUID;
+
 import com.example.demo.model.Person;
 import com.example.demo.service.PersonService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RequestMapping("api/v1/person")
 @RestController
@@ -17,7 +21,8 @@ public class PersonController {
     }
 
     @PostMapping
-    public void addPerson(@Valid @NotNull @RequestBody Person person) {
+    public void addPerson(@Valid @NotNull
+                          @RequestBody Person person) {
         personService.addPerson(person);
     }
 
@@ -31,6 +36,10 @@ public class PersonController {
         return personService.getPersonById(id)
                 .orElse(null);
     }
+    @GetMapping(path="/perNome/{name}")
+    public List<Person> findByName(@PathVariable("name") String name){
+        return personService.findByName(name);
+    }
 
     @DeleteMapping(path = "{id}")
     public void deletePersonById(@PathVariable("id") UUID id) {
@@ -38,7 +47,8 @@ public class PersonController {
     }
 
     @PutMapping(path = "{id}")
-    public void updatePersonById(@PathVariable("id") UUID id,@Valid @NotNull @RequestBody Person personToUpdate) {
+    public void updatePersonById(@PathVariable("id") UUID id,//@Valid @NotNull
+                                 @RequestBody Person personToUpdate) {
         personService.updatePersonById(id, personToUpdate);
     }
 }
