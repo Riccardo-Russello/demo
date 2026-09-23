@@ -1,11 +1,14 @@
 package com.example.demo.api;
 
 import com.example.demo.exception.InvalidLetterException;
+import com.example.demo.exception.PersonNotFoundException;
 import com.example.demo.model.Person;
 import com.example.demo.service.PersonService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,9 +29,10 @@ public class PersonController {
 
     // Gestisce la POST
     @PostMapping
-    public void addPerson(@Valid @NotNull
+    public ResponseEntity<Person> addPerson(@Valid @NotNull
                           @RequestBody Person person) {
-        personService.addPerson(person);
+        Person savedPerson = personService.addPerson(person);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedPerson);
     }
 
     // Gestisce la GET api/v1/person
@@ -39,8 +43,7 @@ public class PersonController {
     // Gestisce la GET api/v1/person/{id}
     @GetMapping(path="{id}")
     public Person getPersonById(@PathVariable("id") UUID id){   // Legge l'Id dal percorso e lo converte in UUID
-        return personService.getPersonById(id)
-                .orElse(null);
+        return personService.getPersonById(id);
     }
     // Gestisce la GET api/v1/person/{nome}
     @GetMapping(params = "name")
@@ -52,7 +55,10 @@ public class PersonController {
     // ==== ESERCIZIO 5 ====
     @GetMapping(params = "letter", produces ="text/plain")          // (params = "letter)   path = "/per-lettera"
     public String getNamesByChar(
-            @RequestParam(value = "letter",  required = false) String letter){
+            @RequestParam(value = "letter",  required = false)
+            @Pattern(regexp = "[a-zA-Z]",
+                    message = "Inserire una sola lettera")
+            String letter){
         return personService.getNamesByChar(letter);
     }
 
@@ -74,15 +80,16 @@ public class PersonController {
 
     // Gestisce il DELETE api/v1/person/{id}
     @DeleteMapping(path = "{id}")
-    public void deletePersonById(@PathVariable("id") UUID id) {
+    public ResponseEntity<Person> deletePersonById(@PathVariable("id") UUID id) {
         personService.deletePersonById(id);
+        return ResponseEntity.noContent().build();
     }
 
     // Gestisce il PUT api/v1/person/{id}
     @PutMapping(path = "{id}")
-    public void updatePersonById(@PathVariable("id") UUID id, @Valid @NotNull
+    public ResponseEntity<Person> updatePersonById(@PathVariable("id") UUID id, @Valid @NotNull
                                  @RequestBody Person personToUpdate) {  // Legge il JSON con i dati da aggiornare
-        personService.updatePersonById(id, personToUpdate);
+        return ResponseEntity.ok(personService.updatePersonById(id, personToUpdate));
     }
 
 }

@@ -1,6 +1,7 @@
 package com.example.demo.service;
 import com.example.demo.exception.InvalidLetterException;
 import com.example.demo.exception.NoNamesFoundException;
+import com.example.demo.exception.PersonNotFoundException;
 import com.example.demo.model.Person;
 import com.example.demo.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +26,9 @@ public class PersonService {
     }
 
     // Riceve la persona da creare e restituisce un indice numerico dopo averla AGGIUNTA al  DB
-    public int addPerson(Person person) {
+    public Person addPerson(Person person) {
         Person personToSave = new Person(UUID.randomUUID(), person.getName(), person.getSurname());
-        personRepository.save(personToSave);
-        return 1;
+        return personRepository.save(personToSave);
     }
     //Restituisce tutte le persone
     public List<Person> getAllPeople() {
@@ -40,41 +40,41 @@ public class PersonService {
         return personRepository.findByName(name);
     }
 
-    // Restituisce una persona Opstional cercata per id
-    public Optional<Person> getPersonById(UUID id) {
-        return personRepository.findById(id);
+    // Restituisce una persona Optional cercata per id
+    public Person getPersonById(UUID id) {
+        return personRepository.findById(id)
+                .orElseThrow(() -> new PersonNotFoundException("Persona non trovata"));
     }
 
     // ELIMINA una persona per Id
-    public int deletePersonById(UUID id) {
+    public void deletePersonById(UUID id) {
         if(!personRepository.existsById(id)){       // se NON esiste la persona con Id, ritorna
-            return 0;
+            throw new PersonNotFoundException("Persona non trovata");
         }
         personRepository.deleteById(id);       // altrimenti ELIMINA la persona
-        return 1;                              // e ritorna 1
     }
 
     // AGGIORNA il nome di una persona cercando per Id
-    public int updatePersonById(UUID id, Person newPerson) {
+    public Person updatePersonById(UUID id, Person newPerson) {
         if(!personRepository.existsById(id)){   // Se NON esiste, ritorna 0
-            return 0;
+            throw new PersonNotFoundException("Persona non trovata");
         }
         Person updatedPerson = new Person(id, newPerson.getName(), newPerson.getSurname()); //crea il nuovo stato mantenendo lo steso id
         updatedPerson.setProfession(newPerson.getProfession());                             // copia la professione
-        personRepository.save(updatedPerson);                                               // salva lo stato aggiornato
-        return 1;
+        return personRepository.save(updatedPerson);                                               // salva lo stato aggiornato
     }
 
-    // Metodo per la validazione della lettera
-    private boolean isValidLetter(String letter){
+    // Metodo per la validazione della lettera (Commentato perché implementato nel Controller)
+/*    private boolean isValidLetter(String letter){
         return letter != null && letter.matches("[a-zA-Z]");
-    }
+    }*/
     public String getNamesByChar(String letter){
-        if(!isValidLetter(letter)){
+    /*    if(!isValidLetter(letter)){
             //return "Invalid Input";     // se l'input non è valido ritornerà la stringa "Invalid Input
             //throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inserire una sola lettera alfabetica");
             throw new InvalidLetterException("Inserire solo una lettera alfabetica");
-        }
+        }*/ // Controllo implementato a livello Controller
+
         List<Person> people = personRepository.findByNameStartingWithIgnoreCase(letter);    // Crea una lista di persone che iniziano con la lettera, case insensitive
         if(people.isEmpty()){
             //return "Resource Not Found";    // se la lista di persone è vuota, ritornerà la stringa "Resource Not Found"
