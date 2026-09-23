@@ -1,7 +1,13 @@
 package com.example.demo.service;
+import com.example.demo.exception.InvalidLetterException;
+import com.example.demo.exception.NoNamesFoundException;
 import com.example.demo.model.Person;
 import com.example.demo.repository.PersonRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.stream.Collectors;
 
 import java.util.List;
@@ -10,6 +16,7 @@ import java.util.UUID;
 
 @Service            // Spring crea e gestisce un'istanza di questa classe
 public class PersonService {
+
     private final PersonRepository personRepository;                    //private final PersonDao personDao;
 
     // Costruttore
@@ -64,11 +71,15 @@ public class PersonService {
     }
     public String getNamesByChar(String letter){
         if(!isValidLetter(letter)){
-            return "Invalid Input";     // se l'input non è valido ritornerà la stringa "Invalid Input
+            //return "Invalid Input";     // se l'input non è valido ritornerà la stringa "Invalid Input
+            //throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inserire una sola lettera alfabetica");
+            throw new InvalidLetterException("Inserire solo una lettera alfabetica");
         }
         List<Person> people = personRepository.findByNameStartingWithIgnoreCase(letter);    // Crea una lista di persone che iniziano con la lettera, case insensitive
         if(people.isEmpty()){
-            return "Resource Not Found";    // se la lista di persone è vuota, ritornerà la stringa "Resource Not Found"
+            //return "Resource Not Found";    // se la lista di persone è vuota, ritornerà la stringa "Resource Not Found"
+            //throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+            throw new NoNamesFoundException("Nessun nome contiene la lettera indicata");
         }
         return people.stream()                                   // Trasforma la lista in uno stream
                 .map(Person::getName)                            // Prende il nome
